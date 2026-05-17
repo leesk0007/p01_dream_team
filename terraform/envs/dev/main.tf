@@ -359,8 +359,41 @@ module "project01_db_ec2" {
 }
 
 ############################################
+# Auto Scailng (ASG) 두번째 실행시 주석 해제 #
+############################################
+
+/*
+module "asg" {
+  source = "../../modules/asg"
+
+  asg_name = "project01-asg"
+
+  instance_type = "t3.micro"
+
+  desired_capacity = 2
+  min_size         = 1
+  max_size         = 4
+
+  subnet_ids = [
+    module.project01_private_subnet_was.subnet_id
+  ]
+
+  security_group_id = module.project01_was_sg.sg_id
+
+  key_name = module.project01_was_ec2_key.key_name
+
+  target_group_arns = [
+    module.project01_alb.target_group_arn
+  ]  
+}
+*/
+
+
+
+############################################
 # 6. LOAD BALANCER (ALB)
 ############################################
+
 
 # ALB Security Group
 # → 외부 HTTP/HTTPS 트래픽 허용
@@ -396,6 +429,11 @@ module "project01_alb_sg" {
   ]
 }
 
+#######################
+# 두번째 실행시 주석 해제  # ALB, ASG 적용시
+#######################
+
+/*
 # ALB
 # → 사용자 트래픽을 WAS로 라우팅
 # → health check + target group 포함
@@ -412,10 +450,13 @@ module "project01_alb" {
 
   security_group_ids = [module.project01_alb_sg.sg_id]
 
+  # 고정 EC2 (초기 생성되는)
   target_instance_ids = {
     was = module.project01_was01_ec2.instance_id
   }
 }
+*/
+
 
 ############################################
 # 7-1. Ansible - bootstrap전용 inventory.yml 생성
