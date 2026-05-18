@@ -14,6 +14,36 @@
     content: "adreamin ALL=(ALL) NOPASSWD: ALL"
     mode: "0440"
 
+- name: "local .ssh폴더 생성"
+  file:
+    path: "{{ lookup('env', 'HOME') }}/.ssh"
+    state: directory # state 키값이 멱등성을 보장
+    mode: "0700"
+
+- name: "bastion keygen" # ssh keygen 자체로 public = 644, private = 600으로 권한을 줌
+  delegate_to: localhost # 키 값을 줌으로서 ec2가 아닌 local에 실행됨
+  run_once: true # 현재 hosts: all이라서 한번만 keygen할 수 있게 설정
+  become: no # sudo 안쓰기
+  command: >
+    ssh-keygen -t rsa -b 4096
+    -f {{ lookup('env', 'HOME') }}/.ssh/bastion-key.pem
+    -C "bastion-key"
+    -N ""
+  args: # 이미 있다면 생성하지않기
+    creates: "{{ lookup('env', 'HOME') }}/.ssh/bastion-key.pem"
+
+- name: "ansible keygen"
+  delegate_to: localhost
+  run_once: true
+  become: no 
+  command: >
+    ssh-keygen -t rsa -b 4096
+    -f {{ lookup('env', 'HOME') }}/.ssh/ansible-key.pem
+    -C "ansible-key"
+    -N ""
+  args:
+    creates: "{{ lookup('env', 'HOME') }}/.ssh/ansible-key.pem"
+
 - name: "adreamin .ssh폴더 생성"
   file:
     path: /home/adreamin/.ssh

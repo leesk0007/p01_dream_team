@@ -1,0 +1,27 @@
+---
+- name: "이벤트 계정 생성 & db 생성"
+  become: yes
+  block:
+    - name: "event user 생성"
+      become: yes
+      shell: |
+        sudo -u postgres psql -c "CREATE USER {{ event_user }} WITH PASSWORD '{{ event_pass }}';"
+      ignore_errors: yes
+
+    - name: "DB 생성"
+      become: yes
+      shell: |
+        sudo -u postgres psql -c "CREATE DATABASE {{ event_db }} OWNER {{ event_user }};"
+      ignore_errors: yes
+
+- name: "초기 sql데이터 주입"
+  copy:
+    src: ../files/eventdb.sql
+    dest: /tmp/eventdb.sql
+    owner: postgres
+    group: postgres
+    mode: "0644"
+
+- name: "event table생성"
+  shell: |
+    sudo -u postgres psql -d {{ event_db }} -f /tmp/eventdb.sql
