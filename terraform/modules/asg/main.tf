@@ -5,7 +5,7 @@ data "aws_ami" "was_ami" {
   owners      = ["self"] # 이미지는 내 계정에 있음
   filter {
     name   = "name"
-    values = ["project01-was-ec2--ami-*"] # 이미지 름
+    values = ["project01-was-ec2--ami-*"] # 이미지 이름
   }
 }
 
@@ -41,6 +41,8 @@ resource "aws_autoscaling_group" "asg" {
   desired_capacity = var.desired_capacity
   max_size         = var.max_size
   min_size         = var.min_size
+  
+  target_group_arns = var.target_group_arns
 
   launch_template {
     id      = aws_launch_template.lt.id
