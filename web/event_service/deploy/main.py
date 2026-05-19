@@ -4,6 +4,8 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import declarative_base, sessionmaker
 from fastapi.staticfiles import StaticFiles
+import socket
+import os
 
 app = FastAPI()
 
@@ -13,7 +15,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # PostgreSQL 연결정보
 #DATABASE_URL = "postgresql://eventuser:1234@localhost:5432/eventdb"
-DATABASE_URL = "postgresql://eventuser:1234@10.0.30.7:5432/eventdb"
+#DATABASE_URL = "postgresql://eventuser:1234@10.0.30.195:5432/eventdb"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # DB 엔진 생성
 engine = create_engine(DATABASE_URL)
@@ -45,9 +48,15 @@ templates = Jinja2Templates(directory="templates")
 # 메인 페이지
 @app.get("/")
 async def home(request: Request):
+
+    private_ip = get_private_ip()
+
     return templates.TemplateResponse(
         request=request,
-        name="main_index.html"
+        name="main_index.html",
+        context={
+            "private_ip": private_ip
+        }		
     )
 
 
@@ -80,3 +89,11 @@ async def check_winner(data: dict):
 
     finally:
         db.close()
+
+def get_private_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    finally:
+        s.close()

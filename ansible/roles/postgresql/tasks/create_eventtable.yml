@@ -1,54 +1,84 @@
 ---
-- name: "이벤트 계정 생성 & db 생성"
+- name: "이벤트 계정 생성 & DB 생성"
   become: yes
-  block:
-    - name: "event user존재 확인"
-      shell: | # -tAc는 주어진 명령어가 사실이라면 1을 출력하라
-        sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='{{ event_user }}';" 
-      args: # sudo -u postgres 실행 위치를 변경하기 위함
-        chdir: /tmp
-      register: event_user_exists # 변수 저장 >> event_user_exists == 1 혹은 blank(빈 값)
-      changed_when: false # 단순 조회만 함으로 change표기를 하지않음 == ok: [db01]
+  shell: |
+    sudo -u postgres psql <<'EOF'
 
-    - name: "event user 생성"
-      shell: |
-        sudo -u postgres psql -c "CREATE USER {{ event_user }} WITH PASSWORD '{{ event_pass }}';"
-      args:
-        chdir: /tmp
-      when: event_user_exists.stdout != "1" # 저장된 변수를 여기서 읽음 >> 1이면 존재한다는 것
-      no_log: true # 비밀번호 가리게
+    DO
+    $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT FROM pg_catalog.pg_roles
+        WHERE rolname = '{{ event_user }}'
+      ) THEN
+        CREATE USER {{ event_user }} WITH PASSWORD '{{ event_pass }}';
+      END IF;
+    END
+    $$;
 
-    - name: "event DB존재 확인"
-      shell: |
-        sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='{{ event_db }}';"
-      args:
-        chdir: /tmp
-      register: event_db_exists
-      changed_when: false
+    SELECT 'CREATE DATABASE {{ event_db }} OWNER {{ event_user }}'
+    WHERE NOT EXISTS (
+      SELECT FROM pg_database
+      WHERE datname = '{{ event_db }}'
+    )\gexec
 
-    - name: "DB 생성"
-      shell: |
-        sudo -u postgres psql -c "CREATE DATABASE {{ event_db }} OWNER {{ event_user }};"
-      args:
-        chdir: /tmp
-      when: event_db_exists.stdout != "1"
+    GRANT ALL PRIVILEGES ON DATABASE {{ event_db }} TO {{ event_user }};
 
+    EOF
+  args:
+    executable: /bin/bash
 
-    - name: "schema 권한"
-      shell: |
-        sudo -u postgres psql -d {{ event_db }} -c "
-        GRANT ALL ON SCHEMA public TO {{ event_user }};
-        "
+- name: "public schema owner 변경"
+  become: yes
+  shell: >
+    sudo -u postgres psql -d {{ event_db }}
+    -c "ALTER SCHEMA public OWNER TO {{ event_user }};"
+  args:
+    executable: /bin/bash
 
-    - name: "table 권한"
-      shell: |
-        sudo -u postgres psql -d {{ event_db }} -c "
-        GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO {{ event_user }};
-        "      
-    # - name: "DB 권한 부여 (필수)"
-    #   shell: |
-    #     sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE {{ event_db }} TO {{ event_user }};"
+- name: "schema 권한 부여"
+  become: yes
+  shell: >
+    sudo -u postgres psql -d {{ event_db }}
+    -c "GRANT USAGE, CREATE ON SCHEMA public TO {{ event_user }};"
+  args:
+    executable: /bin/bash
 
+- name: "table 권한 부여"
+  become: yes
+  shell: >
+    sudo -u postgres psql -d {{ event_db }}
+    -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO {{ event_user }};"
+  args:
+    executable: /bin/bash
+
+- name: "sequence 권한 부여"
+  become: yes
+  shell: >
+    sudo -u postgres psql -d {{ event_db }}
+    -c "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO {{ event_user }};"
+  args:
+    executable: /bin/bash
+
+- name: "default table privilege"
+  become: yes
+  shell: >
+    sudo -u postgres psql -d {{ event_db }}
+    -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public
+    GRANT ALL PRIVILEGES ON TABLES TO {{ event_user }};"
+  args:
+    executable: /bin/bash
+
+- name: "default sequence privilege"
+  become: yes
+  shell: >
+    sudo -u postgres psql -d {{ event_db }}
+    -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public
+    GRANT ALL PRIVILEGES ON SEQUENCES TO {{ event_user }};"
+  args:
+    executable: /bin/bash
+
+    
 - name: "초기 sql데이터 주입"
   copy:
     src: ../files/eventdb.sql
@@ -60,3 +90,25 @@
 - name: "event table생성"
   shell: |
     sudo -u postgres psql -d {{ event_db }} -f /tmp/eventdb.sql
+
+
+
+# #Ansible postgresql modules
+# - name: Create user
+#   community.postgresql.postgresql_user:
+#     name: "{{ event_user }}"
+#     password: "{{ event_pass }}"
+#     state: present
+
+# - name: Create DB
+#   community.postgresql.postgresql_db:
+#     name: "{{ event_db }}"
+#     owner: "{{ event_user }}"
+#     state: present
+
+# - name: Grant privileges
+#   community.postgresql.postgresql_privs:
+#     db: "{{ event_db }}"
+#     role: "{{ event_user }}"
+#     type: database
+#     privs: ALL
