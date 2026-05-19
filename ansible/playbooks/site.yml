@@ -20,7 +20,7 @@
   roles:
     - nginx
     - fastapi
-    - exporters
+    - node_exporters
 
 - name: DB setup
   hosts: db
@@ -29,4 +29,5 @@
 
   roles:
     - postgresql
-    - exporters
+    - node_exporters
+    - postgres_exporters

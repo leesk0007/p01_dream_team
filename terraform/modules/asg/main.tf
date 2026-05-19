@@ -5,7 +5,7 @@ data "aws_ami" "was_ami" {
   owners      = ["self"] # 이미지는 내 계정에 있음
   filter {
     name   = "name"
-    values = ["project01-was-ec2--ami-*"] # 이미지 이름
+    values = ["project01-was-ami-*"] # 이미지 이름
   }
 }
 

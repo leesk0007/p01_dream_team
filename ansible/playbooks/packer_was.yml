@@ -1,0 +1,12 @@
+---
+- name: Build WAS Image
+  hosts: all
+  become: yes
+
+  vars_files:
+    - ../roles/fastapi/vars/packer.yml # var 파일 명시
+
+  roles:
+    - nginx
+    - fastapi
+    - node_exporters

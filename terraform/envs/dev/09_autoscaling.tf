@@ -1,8 +1,8 @@
 ############################################
-# Auto Scailng (ASG) 두번째 실행시 주석 해제 #
+# Auto Scailng (ASG) 
 ############################################
 
-/*
+
 module "asg" {
   source = "../../modules/asg"
 
@@ -26,4 +26,3 @@ module "asg" {
     module.project01_alb.target_group_arn
   ]  
 }
-*/
