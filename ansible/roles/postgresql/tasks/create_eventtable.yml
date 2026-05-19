@@ -1,0 +1,44 @@
+---
+- name: "이벤트 계정 생성 & db 생성"
+  become: yes
+  block:
+    - name: "event user 생성"
+      become: yes
+      shell: |
+        sudo -u postgres psql -c "CREATE USER {{ event_user }} WITH PASSWORD '{{ event_pass }}';"
+      ignore_errors: yes
+
+    - name: "DB 생성"
+      become: yes
+      shell: |
+        sudo -u postgres psql -c "CREATE DATABASE {{ event_db }} OWNER {{ event_user }};"
+      ignore_errors: yes
+
+
+    - name: "schema 권한"
+      shell: |
+        sudo -u postgres psql -d {{ event_db }} -c "
+        GRANT ALL ON SCHEMA public TO {{ event_user }};
+        "
+
+    - name: "table 권한"
+      shell: |
+        sudo -u postgres psql -d {{ event_db }} -c "
+        GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO {{ event_user }};
+        
+        "      
+    # - name: "DB 권한 부여 (필수)"
+    #   shell: |
+    #     sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE {{ event_db }} TO {{ event_user }};"
+
+- name: "초기 sql데이터 주입"
+  copy:
+    src: ../files/eventdb.sql
+    dest: /tmp/eventdb.sql
+    owner: postgres
+    group: postgres
+    mode: "0644"
+
+- name: "event table생성"
+  shell: |
+    sudo -u postgres psql -d {{ event_db }} -f /tmp/eventdb.sql

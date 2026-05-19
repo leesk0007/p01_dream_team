@@ -1,6 +1,9 @@
 ---
-- name: "bootstrap"
+- name: Bootstrap servers
   hosts: all
+  remote_user: ec2-user
   become: yes
+
   roles:
-    - bootstrap_adreamin
+    - bootstrap_user
+    - common
