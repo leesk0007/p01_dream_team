@@ -11,5 +11,5 @@ INSERT INTO event_data (name, receipt_no, result)
 VALUES
 ('홍길동', 'A001', '당첨'),
 ('김철수', 'A002', '미당첨'),
-('이영희', 'A003', '당첨');
+('이영희', 'A003', '당첨')
 ON CONFLICT (receipt_no) DO NOTHING;

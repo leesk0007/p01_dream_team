@@ -2,17 +2,36 @@
 - name: "이벤트 계정 생성 & db 생성"
   become: yes
   block:
+    - name: "event user존재 확인"
+      shell: | # -tAc는 주어진 명령어가 사실이라면 1을 출력하라
+        sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='{{ event_user }}';" 
+      args: # sudo -u postgres 실행 위치를 변경하기 위함
+        chdir: /tmp
+      register: event_user_exists # 변수 저장 >> event_user_exists == 1 혹은 blank(빈 값)
+      changed_when: false # 단순 조회만 함으로 change표기를 하지않음 == ok: [db01]
+
     - name: "event user 생성"
-      become: yes
       shell: |
         sudo -u postgres psql -c "CREATE USER {{ event_user }} WITH PASSWORD '{{ event_pass }}';"
-      ignore_errors: yes
+      args:
+        chdir: /tmp
+      when: event_user_exists.stdout != "1" # 저장된 변수를 여기서 읽음 >> 1이면 존재한다는 것
+      no_log: true # 비밀번호 가리게
+
+    - name: "event DB존재 확인"
+      shell: |
+        sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='{{ event_db }}';"
+      args:
+        chdir: /tmp
+      register: event_db_exists
+      changed_when: false
 
     - name: "DB 생성"
-      become: yes
       shell: |
         sudo -u postgres psql -c "CREATE DATABASE {{ event_db }} OWNER {{ event_user }};"
-      ignore_errors: yes
+      args:
+        chdir: /tmp
+      when: event_db_exists.stdout != "1"
 
 
     - name: "schema 권한"
@@ -25,7 +44,6 @@
       shell: |
         sudo -u postgres psql -d {{ event_db }} -c "
         GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO {{ event_user }};
-        
         "      
     # - name: "DB 권한 부여 (필수)"
     #   shell: |
