@@ -1,7 +1,5 @@
 ---
-  # AMI 이미지 찰칵
-  # 지금 세팅된 이 서버의 진짜 ID를 스스로 알아내기
-  - name: 현재 EC2 인스턴스의 토큰 가져오기
+  - name: 현재 EC2 인스턴스의 토큰 가져오기 (IMDSv2)
     uri:
       url: http://169.254.169.254/latest/api/token
       method: PUT
@@ -18,11 +16,17 @@
       return_content: yes
     register: ec2_metadata
 
-  # 위에서 알아낸 ID로 사진 찍으라고 명령
-  - name: 방금 세팅 끝난 이 서버를 AMI로 자동 캡처하기
+  - name: AMI 캡처
     amazon.aws.ec2_ami:
-      instance_id: "{{ ec2_metadata.content }}"  # ID 자동 주입
-      name: "project01-was-ec2--ami-{{ ansible_date_time.iso8601_basic_short }}"
-      wait: yes # 캡처가 완전히 끝날 때까지 앤서블이 기다려줌
-    delegate_to: localhost # 이 명령은 서버 안이 아니라 밖(로컬)에서 날림
+      instance_id: "{{ ec2_metadata.content }}"
+      name: "project01-was-ami-{{ ansible_date_time.iso8601_basic_short }}"
+      wait: yes
+    delegate_to: localhost
+    become: false
+    register: captured_ami
+
+  - name: 생성된 AMI ID 출력
+    debug:
+      msg: "AMI 생성 완료 → {{ captured_ami.image_id }}"
+    delegate_to: localhost
     become: false

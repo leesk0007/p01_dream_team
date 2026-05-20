@@ -15,8 +15,6 @@ module "project01_alb" {
 
   security_group_ids = [module.project01_alb_sg.sg_id]
 
-  # 고정 EC2 (초기 생성되는)
-  target_instance_ids = {
-    was = module.project01_was01_ec2.instance_id
-  }
+  # ASG가 target_group_arns으로 인스턴스를 자동 등록하므로 직접 등록 없음
+  target_instance_ids = {}
 }

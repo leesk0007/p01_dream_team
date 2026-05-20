@@ -31,3 +31,11 @@
     - postgresql
     - node_exporters
     - postgres_exporters
+
+- name: WAS AMI_capture
+  hosts: was
+  remote_user: adreamin
+  become: yes
+
+  roles:
+    - ami_capture

@@ -20,5 +20,6 @@ variable "target_instance_ids" {
 }
 */
 variable "target_instance_ids" {
-  type = map(string)
+  type    = map(string)
+  default = {}
 }

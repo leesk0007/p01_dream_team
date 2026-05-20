@@ -49,6 +49,16 @@ resource "aws_autoscaling_group" "asg" {
     version = "$Latest"
   }
 
+  # Launch Template 버전이 바뀌면 자동으로 인스턴스 롤링 교체 시작
+  instance_refresh {
+    strategy = "Rolling"
+    preferences {
+      min_healthy_percentage = 50
+      instance_warmup        = 60
+    }
+    triggers = ["launch_template"]
+  }
+
   default_cooldown = 60
 }
 

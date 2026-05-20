@@ -1,6 +1,6 @@
 variable "domain_name" {
     type = string
-    default = "vche.cloud"
+    default = "등록된 도메인주소"
 }
 
 variable "alb_arn" {
