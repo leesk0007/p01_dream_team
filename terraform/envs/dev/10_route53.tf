@@ -1,7 +1,8 @@
 module "project01_route53" {
   source = "../../modules/route53"
 
-
+  domain_name = "infrastudy.store"
+  
   # ALB 모듈에서 출력된 값들을 받아옴
   alb_arn          = module.project01_alb.alb_arn
   alb_dns_name     = module.project01_alb.alb_dns_name

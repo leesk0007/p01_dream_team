@@ -1,7 +1,7 @@
 ############################################
 # Auto Scaling (ASG)
 ############################################
-
+/*
 module "asg" {
   source = "../../modules/asg"
 
@@ -25,3 +25,4 @@ module "asg" {
     module.project01_alb.target_group_arn
   ]
 }
+*/

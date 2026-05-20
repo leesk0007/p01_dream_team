@@ -51,6 +51,19 @@ module "project01_was01_ec2" {
   root_volume_size = 30
 }
 
+module "project01_was02_ec2" {
+  source             = "../../modules/ec2"
+  instance_type      = "t3.micro"
+  subnet_id          = module.project01_private_subnet_was.subnet_id
+  security_group_ids = [module.project01_was_sg.sg_id]
+  key_name           = module.project01_was_ec2_key.key_name
+  name               = "project01-was02-ec2"
+  tags               = { Role = "WAS" }
+
+  root_volume_size = 30
+}
+
+
 # DB Server
 # → 데이터 저장 전용 서버
 module "project01_db_ec2" {

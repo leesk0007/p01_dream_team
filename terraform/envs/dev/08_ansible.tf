@@ -107,17 +107,12 @@ resource "local_file" "ansible_inventory_prod" {
           hosts = {
             was01 = {
               ansible_host                    = module.project01_was01_ec2.private_ip
-              #ansible_user                    = "adreamin"
-			  #ansible_user                    = "ec2-user"              
-              #ansible_ssh_common_args        = "-o ProxyJump=bastion01"
-			  # .ssh/config 설정하지 않을경우
-			  	#ansible_ssh_common_args      = "-o ProxyJump=adreamin@${module.project01_bastion_ec2.public_ip} -o IdentityFile=~/.ssh/bastion-key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
               ansible_ssh_common_args = <<-EOT
                 -o ProxyCommand="ssh -i ~/.ssh/bastion-key.pem -W %h:%p -q adreamin@${module.project01_bastion_ec2.public_ip}"
                 -o StrictHostKeyChecking=no
                 -o UserKnownHostsFile=/dev/null
               EOT				
-            }
+            }		
           }
         }
 
@@ -125,11 +120,6 @@ resource "local_file" "ansible_inventory_prod" {
           hosts = {
             db01 = {
               ansible_host                    = module.project01_db_ec2.private_ip
-              #ansible_user                    = "adreamin"
-			  #ansible_user                    = "ec2-user"
-              #ansible_ssh_common_args        = "-o ProxyJump=bastion01"
-			  # .ssh/config 설정하지 않을경우
-			  	#ansible_ssh_common_args      = "-o ProxyJump=adreamin@${module.project01_bastion_ec2.public_ip} -o IdentityFile=~/.ssh/bastion-key.pem -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
               ansible_ssh_common_args = <<-EOT
                 -o ProxyCommand="ssh -i ~/.ssh/bastion-key.pem -W %h:%p -q adreamin@${module.project01_bastion_ec2.public_ip}"
                 -o StrictHostKeyChecking=no
