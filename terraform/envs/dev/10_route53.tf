@@ -14,3 +14,10 @@ output "alb_dns_name" {
   value = module.project01_alb.alb_dns_name
 }
 
+
+
+
+
+
+
+
