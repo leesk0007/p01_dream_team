@@ -28,12 +28,6 @@ jobs:
           chmod 600 ~/.ssh/bastion-key.pem
           echo "${{ secrets.ANSIBLE_PRIVATE_KEY }}" > ~/.ssh/ansible-key.pem
           chmod 600 ~/.ssh/ansible-key.pem
-
-      - name: SSH connection test to WAS
-        run: |
-          ssh -i ~/.ssh/bastion-key.pem \
-              -o StrictHostKeyChecking=no \
-              adreamin@13.124.215.149 "echo 'SSH OK'"
               
       # - name: WAS SSH 연결 테스트 (디버깅용)
       #   run: |
