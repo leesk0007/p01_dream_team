@@ -65,7 +65,7 @@ resource "aws_autoscaling_group" "asg" {
       #instance_warmup        = 60
 	  instance_warmup        = 20
     }
-    triggers = ["launch_template"]
+    triggers = ["launch_template", "tag"]
   }
 
   #default_cooldown = 60

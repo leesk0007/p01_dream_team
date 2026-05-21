@@ -98,4 +98,10 @@ jobs:
         #run: terraform apply --auto-approve -target=module.asg
         run: |
           terraform apply --auto-approve \
+            -target=module.asg \
             -var="ami_id=${{ env.AMI_ID }}"
+
+      - name: ASG Instance Refresh Trigger
+        run: |
+          aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name project01-asg
