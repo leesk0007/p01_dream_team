@@ -9,6 +9,7 @@
   become: yes
 
   roles:
+    - swap
     - monitoring_grafana
     - monitoring_prometheus
 
@@ -32,10 +33,10 @@
     - node_exporters
     - postgres_exporters
 
-- name: WAS AMI_capture
-  hosts: was
-  remote_user: adreamin
-  become: yes
+# - name: WAS AMI_capture
+#   hosts: was
+#   remote_user: adreamin
+#   become: yes
 
-  roles:
-    - ami_capture
+#   roles:
+#     - ami_capture

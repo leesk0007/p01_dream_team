@@ -2,6 +2,8 @@
 # Auto Scaling (ASG)
 ############################################
 
+#2차 실행시 적용 (주석해제)
+
 module "asg" {
   source = "../../modules/asg"
 
@@ -10,7 +12,7 @@ module "asg" {
   instance_type = "t3.micro"
 
   desired_capacity = 2
-  min_size         = 1
+  min_size         = 2
   max_size         = 4
 
   subnet_ids = [

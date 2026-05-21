@@ -29,25 +29,25 @@ jobs:
           echo "${{ secrets.ANSIBLE_PRIVATE_KEY }}" > ~/.ssh/ansible-key.pem
           chmod 600 ~/.ssh/ansible-key.pem
               
-      # - name: WAS SSH 연결 테스트 (디버깅용)
-      #   run: |
-      #     BASTION_IP=$(python3 -c "
-      #     import yaml
-      #     inv = yaml.safe_load(open('ansible/inventories/dev/inventory.yml'))
-      #     print(inv['all']['children']['bastion']['hosts']['bastion01']['ansible_host'])
-      #     ")
-      #     WAS_IP=$(python3 -c "
-      #     import yaml
-      #     inv = yaml.safe_load(open('ansible/inventories/dev/inventory.yml'))
-      #     print(inv['all']['children']['was']['hosts']['was01']['ansible_host'])
-      #     ")
-      #     echo "Bastion IP: $BASTION_IP / WAS IP: $WAS_IP"
-      #     ssh -i ~/.ssh/ansible-key.pem \
-      #       -o StrictHostKeyChecking=no \
-      #       -o ConnectTimeout=10 \
-      #       -o ProxyCommand="ssh -i ~/.ssh/bastion-key.pem -W %h:%p -q -o StrictHostKeyChecking=no adreamin@$BASTION_IP" \
-      #       -v \
-      #       adreamin@$WAS_IP "echo 'WAS OK'"
+      - name: WAS SSH 연결 테스트 (디버깅용)
+        run: |
+          BASTION_IP=$(python3 -c "
+          import yaml
+          inv = yaml.safe_load(open('ansible/inventories/dev/inventory.yml'))
+          print(inv['all']['children']['bastion']['hosts']['bastion01']['ansible_host'])
+          ")
+          WAS_IP=$(python3 -c "
+          import yaml
+          inv = yaml.safe_load(open('ansible/inventories/dev/inventory.yml'))
+          print(inv['all']['children']['was']['hosts']['was01']['ansible_host'])
+          ")
+          echo "Bastion IP: $BASTION_IP / WAS IP: $WAS_IP"
+          ssh -i ~/.ssh/ansible-key.pem \
+            -o StrictHostKeyChecking=no \
+            -o ConnectTimeout=10 \
+            -o ProxyCommand="ssh -i ~/.ssh/bastion-key.pem -W %h:%p -q -o StrictHostKeyChecking=no adreamin@$BASTION_IP" \
+            -v \
+            adreamin@$WAS_IP "echo 'WAS OK'"
             
       - name: Python & Ansible 설치
         run: pip install ansible boto3 botocore
