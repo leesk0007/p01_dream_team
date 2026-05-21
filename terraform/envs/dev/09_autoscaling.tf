@@ -7,6 +7,8 @@
 module "asg" {
   source = "../../modules/asg"
 
+  ami_id = var.ami_id
+
   asg_name = "project01-asg"
 
   instance_type = "t3.micro"

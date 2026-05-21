@@ -72,6 +72,20 @@ jobs:
             playbooks/ami_capture.yml \
             -e "ansible_python_interpreter=/usr/bin/python3"
 
+      # -------------------------
+      # AMI ID 추출 (핵심)
+      # -------------------------
+      - name: AMI ID 가져오기
+        run: |
+          AMI_ID=$(aws ec2 describe-images \
+            --owners self \
+            --filters "Name=name,Values=project01-was-ami-*" \
+            --query 'Images | sort_by(@,&CreationDate)[-1].ImageId' \
+            --output text)
+
+          echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
+          echo "Latest AMI: $AMI_ID"
+
       - name: Terraform 설치
         uses: hashicorp/setup-terraform@v3
 
@@ -81,4 +95,7 @@ jobs:
 
       - name: ASG 업데이트 (새 AMI 반영)
         working-directory: ./terraform/envs/dev
-        run: terraform apply --auto-approve -target=module.asg
+        #run: terraform apply --auto-approve -target=module.asg
+        run: |
+          terraform apply --auto-approve \
+            -var="ami_id=${{ env.AMI_ID }}"

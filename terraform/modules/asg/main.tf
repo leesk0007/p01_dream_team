@@ -9,17 +9,25 @@ data "aws_ami" "was_ami" {
   }
 }
 
+locals {
+  ami_id = coalesce(var.ami_id, data.aws_ami.was_ami.id)
+}
+
 # Launch Template
 resource "aws_launch_template" "lt" {
   name_prefix   = "project01-was01-ec2-"
 
-  image_id      = data.aws_ami.was_ami.id
-  
+  #image_id      = data.aws_ami.was_ami.id
+  image_id      = local.ami_id   #jin 추가
+
   instance_type = var.instance_type
 
   vpc_security_group_ids = [var.security_group_id]
   key_name               = var.key_name
   
+  
+  user_data = base64encode("AMI=${local.ami_id}") #jin 추가
+
   # 시작 템플릿을 통해 생성될 리소스에 대한 상태 태그 설정
   tag_specifications {
     # 태그를 적용할 리소스의 종류
