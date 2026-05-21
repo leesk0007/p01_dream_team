@@ -54,12 +54,14 @@ resource "aws_autoscaling_group" "asg" {
     strategy = "Rolling"
     preferences {
       min_healthy_percentage = 50
-      instance_warmup        = 60
+      #instance_warmup        = 60
+	  instance_warmup        = 20
     }
     triggers = ["launch_template"]
   }
 
-  default_cooldown = 60
+  #default_cooldown = 60
+  default_cooldown = 15
 }
 
 # ASG에 의해 생성된 실제 인스턴스의 정보를 조회
@@ -87,7 +89,10 @@ resource "aws_autoscaling_policy" "cpu_scaling_policy" {
   # 대상 추적 방식 : 특정 지표를 정해진 수치로 유지하도록 aws 알아서 조종
   autoscaling_group_name = aws_autoscaling_group.asg.name
   # 대상 추적 설정
-  policy_type = "TargetTrackingScaling"
+  policy_type = "TargetTrackingScaling"  
+  
+  estimated_instance_warmup = 60
+
   target_tracking_configuration {
     # 무엇을 기준으로 추적할것인가?
     predefined_metric_specification {
@@ -97,6 +102,8 @@ resource "aws_autoscaling_policy" "cpu_scaling_policy" {
     # 기준이 되는 사용률 50% (테스트를 위해낮게 잡음)
     # 50%를 넘어가면 -> scale out -> ec2 개수가 늘어남 (max 까지)
     # 50% 아래로 떨어지면 -> scale in -> ec2 개수가 줄어듬 (min까지)
-    target_value = 50
+    #target_value = 50
+	target_value = 30	
   }
+
 }

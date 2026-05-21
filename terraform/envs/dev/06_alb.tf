@@ -13,13 +13,11 @@ module "project01_alb" {
     module.project01_public_subnet_alb_b.subnet_id
   ]
 
-  security_group_ids = [module.project01_alb_sg.sg_id]
+  security_group_ids = [module.project01_alb_sg.sg_id]  
 
-  # ASG가 target_group_arns으로 인스턴스를 자동 등록하므로 직접 등록 없음
-
-  # 1차 진행시 사용
+  # ASG 없을 경우
   #target_instance_ids = { was = module.project01_was01_ec2.instance_id }
 
-  # 2차 진행시 사용
-  target_instance_ids = {}  
+  # ASG 사용시 target_group_arns으로 인스턴스를 자동 등록으로 빈값 설정
+  target_instance_ids = {}
 } 
